@@ -1,54 +1,52 @@
-// Your code here.
-// Select all items (cubes)
 const items = document.querySelectorAll('.item');
 
 items.forEach(item => {
     let isDragging = false;
     let offsetX = 0, offsetY = 0;
 
-    // When mouse is pressed, start dragging
     item.addEventListener('mousedown', (event) => {
         isDragging = true;
 
-        // Get mouse position relative to the item
-        offsetX = event.clientX - item.offsetLeft;
-        offsetY = event.clientY - item.offsetTop;
+        // Get initial cursor position relative to the item
+        offsetX = event.clientX - item.getBoundingClientRect().left;
+        offsetY = event.clientY - item.getBoundingClientRect().top;
 
         // Ensure the item is on top
         item.style.zIndex = 1000;
 
-        // Add event listeners for movement and release
+        // Add event listeners to track movement
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
     });
 
-    // Function to handle movement
     function onMouseMove(event) {
         if (!isDragging) return;
+
+        // Get the container and its boundaries
+        const container = document.querySelector('.items');
+        const containerRect = container.getBoundingClientRect();
+        const itemRect = item.getBoundingClientRect();
 
         // Calculate new position
         let newX = event.clientX - offsetX;
         let newY = event.clientY - offsetY;
 
-        // Restrict movement within the container (boundary handling)
-        const container = document.querySelector('.items');
-        const maxX = container.offsetWidth - item.offsetWidth;
-        const maxY = container.offsetHeight - item.offsetHeight;
-
-        newX = Math.max(0, Math.min(newX, maxX));
-        newY = Math.max(0, Math.min(newY, maxY));
+        // Restrict movement within the container
+        if (newX < containerRect.left) newX = containerRect.left;
+        if (newY < containerRect.top) newY = containerRect.top;
+        if (newX + itemRect.width > containerRect.right) newX = containerRect.right - itemRect.width;
+        if (newY + itemRect.height > containerRect.bottom) newY = containerRect.bottom - itemRect.height;
 
         // Apply new position
         item.style.position = 'absolute';
-        item.style.left = `${newX}px`;
-        item.style.top = `${newY}px`;
+        item.style.left = `${newX - containerRect.left}px`;
+        item.style.top = `${newY - containerRect.top}px`;
     }
 
-    // Function to stop dragging
     function onMouseUp() {
         isDragging = false;
 
-        // Remove event listeners to stop movement
+        // Remove event listeners after dragging ends
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup', onMouseUp);
     }
